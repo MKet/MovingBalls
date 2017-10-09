@@ -28,10 +28,10 @@ public class BallRunnable implements Runnable {
         try {
             while (!Thread.currentThread().isInterrupted()) {
                 try {
-                    if (!WithinCritical && ball.getXPos() > (int) criticalXEnter && ball.getXPos() < (int) criticalXLeave) {
+                    if (!WithinCritical && ball.getXPos() > criticalXEnter && ball.getXPos() < criticalXLeave) {
                         monitor.Enter();
                         WithinCritical = true;
-                    } else if (WithinCritical && ball.getXPos() > (int) criticalXLeave) {
+                    } else if (WithinCritical && ball.getXPos() > criticalXLeave) {
                         WithinCritical = false;
                         monitor.Leave();
                     }
