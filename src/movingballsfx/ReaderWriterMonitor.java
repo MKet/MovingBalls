@@ -45,12 +45,11 @@ public class ReaderWriterMonitor {
         lock.lock();
 
         try {
-            while (writerCount != 0 || readerCount != 0) {
+            while (writerCount+readerCount != 0) {
                 writersWaiting++;
                 okToWrite.await();
                 writersWaiting--;
             }
-
             writerCount++;
             okToWrite.signal();
         } finally {
@@ -75,5 +74,4 @@ public class ReaderWriterMonitor {
         else
             okToRead.signal();
     }
-
 }
