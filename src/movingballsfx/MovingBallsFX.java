@@ -6,7 +6,6 @@ package movingballsfx;
 
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.CheckBox;
@@ -34,8 +33,8 @@ public class MovingBallsFX extends Application {
     private int minCsX = (maxX + minX) / 2 - 100;
     private int maxCsX = (maxX + minX) / 2 + 100;
     private Rectangle criticalSection;
-    private IBallMonitor readerMonitor;
-    private IBallMonitor writerMonitor;
+    private BallMonitor readerMonitor;
+    private BallMonitor writerMonitor;
 
     @Override
     public void start(Stage primaryStage) {
@@ -43,9 +42,9 @@ public class MovingBallsFX extends Application {
         // Create the scene
         Group root = new Group();
         Scene scene = new Scene(root, maxX, maxY);
-        BallMonitor monitor = new BallMonitor();
+        ReaderWriterMonitor monitor = new ReaderWriterMonitor();
 
-        readerMonitor = new IBallMonitor() {
+        readerMonitor = new BallMonitor() {
             @Override
             public void Enter() throws InterruptedException {
                 monitor.readerEnter();
@@ -57,7 +56,7 @@ public class MovingBallsFX extends Application {
             }
         };
 
-        writerMonitor = new IBallMonitor() {
+        writerMonitor = new BallMonitor() {
             @Override
             public void Enter() throws InterruptedException {
                 monitor.writeEnter();

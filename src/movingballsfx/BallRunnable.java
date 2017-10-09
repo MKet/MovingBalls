@@ -13,10 +13,10 @@ public class BallRunnable implements Runnable {
     private Ball ball;
     private final double criticalXEnter;
     private final double criticalXLeave;
-    private IBallMonitor monitor;
+    private BallMonitor monitor;
     boolean WithinCritical = false;
 
-    public BallRunnable(Ball ball, double criticalXEnter, double criticalXLeave, IBallMonitor monitor) {
+    public BallRunnable(Ball ball, double criticalXEnter, double criticalXLeave, BallMonitor monitor) {
         this.ball = ball;
         this.criticalXEnter = criticalXEnter;
         this.criticalXLeave = criticalXLeave;
