@@ -11,22 +11,44 @@ package movingballsfx;
 public class BallRunnable implements Runnable {
 
     private Ball ball;
+    private final double criticalXEnter;
+    private final double criticalXLeave;
+    private IBallMonitor monitor;
+    boolean WithinCritical = false;
 
-    public BallRunnable(Ball ball) {
+    public BallRunnable(Ball ball, double criticalXEnter, double criticalXLeave, IBallMonitor monitor) {
         this.ball = ball;
+        this.criticalXEnter = criticalXEnter;
+        this.criticalXLeave = criticalXLeave;
+        this.monitor = monitor;
     }
 
     @Override
     public void run() {
-        while (!Thread.currentThread().isInterrupted()) {
-            try {
-                ball.move();
-                   
-                Thread.sleep(ball.getSpeed());
-                
-            } catch (InterruptedException ex) {
-                Thread.currentThread().interrupt();
+        try {
+            while (!Thread.currentThread().isInterrupted()) {
+                try {
+                    if (!WithinCritical && ball.getXPos() > (int) criticalXEnter && ball.getXPos() < (int) criticalXLeave) {
+                        monitor.Enter();
+                        WithinCritical = true;
+                    } else if (WithinCritical && ball.getXPos() > (int) criticalXLeave) {
+                        WithinCritical = false;
+                        monitor.Leave();
+                    }
+                    ball.move();
+                    Thread.sleep(ball.getSpeed());
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                }
+
             }
+        } finally {
+            if (WithinCritical)
+                try {
+                    monitor.Leave();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
         }
     }
 }

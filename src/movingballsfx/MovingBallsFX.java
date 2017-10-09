@@ -33,6 +33,9 @@ public class MovingBallsFX extends Application {
     private int radius = 10;
     private int minCsX = (maxX + minX) / 2 - 100;
     private int maxCsX = (maxX + minX) / 2 + 100;
+    private Rectangle criticalSection;
+    private IBallMonitor readerMonitor;
+    private IBallMonitor writerMonitor;
 
     @Override
     public void start(Stage primaryStage) {
@@ -40,7 +43,32 @@ public class MovingBallsFX extends Application {
         // Create the scene
         Group root = new Group();
         Scene scene = new Scene(root, maxX, maxY);
-        
+        BallMonitor monitor = new BallMonitor();
+
+        readerMonitor = new IBallMonitor() {
+            @Override
+            public void Enter() throws InterruptedException {
+                monitor.readerEnter();
+            }
+
+            @Override
+            public void Leave() throws InterruptedException {
+                monitor.readerLeave();
+            }
+        };
+
+        writerMonitor = new IBallMonitor() {
+            @Override
+            public void Enter() throws InterruptedException {
+                monitor.writeEnter();
+            }
+
+            @Override
+            public void Leave() throws InterruptedException {
+                monitor.writerLeave();
+            }
+        };
+
         // Check boxes
         for (int i = 0; i < checkBoxArray.length; i++) {
             String text;
@@ -55,12 +83,7 @@ public class MovingBallsFX extends Application {
             final int index = i;
             checkBoxArray[i] = new CheckBox(text);
             checkBoxArray[i].addEventHandler(MouseEvent.MOUSE_CLICKED,
-                new EventHandler<MouseEvent>() {
-                    @Override
-                    public void handle(MouseEvent event) {
-                        checkBoxMouseClicked(event,index);
-                    }
-                });
+                    event -> checkBoxMouseClicked(event,index));
             checkBoxArray[i].setLayoutX(radius);
             checkBoxArray[i].setLayoutY((i*4 + 1)*radius);
             root.getChildren().add(checkBoxArray[i]);
@@ -72,7 +95,7 @@ public class MovingBallsFX extends Application {
         root.getChildren().add(entireSection);
         
         // Indicate critical section
-        Rectangle criticalSection = new Rectangle(minCsX,0,maxCsX-minCsX,maxY);
+        criticalSection = new Rectangle(minCsX,0,maxCsX-minCsX,maxY);
         criticalSection.setFill(Color.LIGHTGREEN);
         root.getChildren().add(criticalSection);
         
@@ -109,7 +132,7 @@ public class MovingBallsFX extends Application {
             // Reader selected: new red ball
             Ball b = new Ball(minX, maxX, minCsX, maxCsX, y, Color.RED);
             ballArray[index] = b;
-            Thread t = new Thread(new BallRunnable(b));
+            Thread t = new Thread(new BallRunnable(b, criticalSection.getX(),criticalSection.getX() + criticalSection.getWidth(), readerMonitor));
             threadArray[index] = t;
             circleArray[index].setVisible(true);
             t.start();
@@ -117,7 +140,7 @@ public class MovingBallsFX extends Application {
             // Writer selected: new blue ball
             Ball b = new Ball(minX, maxX, minCsX, maxCsX, y, Color.BLUE);
             ballArray[index] = b;
-            Thread t = new Thread(new BallRunnable(b));
+            Thread t = new Thread(new BallRunnable(b,criticalSection.getX(),criticalSection.getX() + criticalSection.getWidth(), writerMonitor));
             threadArray[index] = t;
             circleArray[index].setVisible(true);
             t.start();
@@ -171,12 +194,7 @@ public class MovingBallsFX extends Application {
             try {
                 while (true) {
                     Thread.sleep(20);
-                    Platform.runLater(new Runnable(){
-                        @Override
-                        public void run() {
-                            updateCircles();
-                        }
-                    });
+                    Platform.runLater(() -> updateCircles());
                 }
             } catch (InterruptedException ex) {  
             }
