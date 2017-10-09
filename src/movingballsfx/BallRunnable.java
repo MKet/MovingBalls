@@ -38,9 +38,8 @@ public class BallRunnable implements Runnable {
                     ball.move();
                     Thread.sleep(ball.getSpeed());
                 } catch (InterruptedException ex) {
-                    Thread.currentThread().interrupt();
+                    break;
                 }
-
             }
         } finally {
             if (WithinCritical)
