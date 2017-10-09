@@ -8,6 +8,7 @@ public class BallMonitor {
 
     private int readerCount = 0;
     private int writerCount = 0;
+    private int writersWaiting = 0;
     private int readersWaiting = 0;
     private final Lock lock = new ReentrantLock();
     private final Condition okToRead = lock.newCondition();
@@ -34,8 +35,7 @@ public class BallMonitor {
 
         try {
             readerCount--;
-            if (readerCount == 0)
-                okToWrite.signal();
+            signal();
         } finally {
             lock.unlock();
         }
@@ -46,8 +46,11 @@ public class BallMonitor {
 
         try {
             while (writerCount != 0 || readerCount != 0) {
+                writersWaiting++;
                 okToWrite.await();
+                writersWaiting--;
             }
+
             writerCount++;
             okToWrite.signal();
         } finally {
@@ -60,13 +63,17 @@ public class BallMonitor {
 
         try {
             writerCount--;
-            if(readersWaiting > 0)
-                okToRead.signal();
-            else
-                okToWrite.signal();
+            signal();
         } finally {
             lock.unlock();
         }
+    }
+
+    private void signal() {
+        if (writersWaiting != 0)
+            okToWrite.signal();
+        else
+            okToRead.signal();
     }
 
 }
