@@ -19,9 +19,12 @@ public class ReaderWriterMonitor {
 
         try {
             while (writerCount != 0) {
-                readersWaiting++;
-                okToRead.await();
-                readersWaiting--;
+                try {
+                    readersWaiting++;
+                    okToRead.await();
+                } finally {
+                    readersWaiting--;
+                }
             }
             readerCount++;
             okToRead.signal();
@@ -46,9 +49,12 @@ public class ReaderWriterMonitor {
 
         try {
             while (writerCount+readerCount != 0) {
-                writersWaiting++;
-                okToWrite.await();
-                writersWaiting--;
+                try {
+                    writersWaiting++;
+                    okToWrite.await();
+                } finally {
+                    writersWaiting--;
+                }
             }
             writerCount++;
             okToWrite.signal();
