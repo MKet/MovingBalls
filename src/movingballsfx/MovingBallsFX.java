@@ -84,8 +84,7 @@ public class MovingBallsFX extends Application {
             }
             final int index = i;
             checkBoxArray[i] = new CheckBox(text);
-            checkBoxArray[i].addEventHandler(MouseEvent.MOUSE_CLICKED,
-                    event -> checkBoxMouseClicked(event,index));
+            checkBoxArray[i].selectedProperty().addListener((obs, oldVal, newVal ) -> checkBoxMouseClicked(index));
             checkBoxArray[i].setLayoutX(radius);
             checkBoxArray[i].setLayoutY((i*4 + 1)*radius);
             root.getChildren().add(checkBoxArray[i]);
@@ -125,7 +124,7 @@ public class MovingBallsFX extends Application {
         threadDraw.start();
     }
     
-    private void checkBoxMouseClicked(MouseEvent event, int index) {
+    private void checkBoxMouseClicked(int index) {
         CheckBox cb = checkBoxArray[index];
         int y = (int) cb.getLayoutY() + radius;
         if (cb.isSelected() && index < Math.floor(ballAmount * WriterReaderSplit)) {
