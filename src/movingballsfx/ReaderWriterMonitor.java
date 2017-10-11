@@ -18,7 +18,7 @@ public class ReaderWriterMonitor {
         lock.lock();
 
         try {
-            while (writerCount != 0) {
+            while (writerCount+writersWaiting != 0) {
                 try {
                     readersWaiting++;
                     okToRead.await();
