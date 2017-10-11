@@ -70,25 +70,6 @@ public class MovingBallsFX extends Application {
                 monitor.writerLeave();
             }
         };
-
-        // Check boxes
-        for (int i = 0; i < checkBoxArray.length; i++) {
-            String text;
-            if (i < Math.floor(ballAmount * WriterReaderSplit)) {
-                // Check box for reader
-                text = "Reader"+(i+1);
-            }
-            else {
-                // Check box for writer
-                text = "Writer"+(i-(int)Math.floor(ballAmount * WriterReaderSplit)+1);
-            }
-            final int index = i;
-            checkBoxArray[i] = new CheckBox(text);
-            checkBoxArray[i].selectedProperty().addListener((obs, oldVal, newVal ) -> checkBoxMouseClicked(index));
-            checkBoxArray[i].setLayoutX(radius);
-            checkBoxArray[i].setLayoutY((i*4 + 1)*radius);
-            root.getChildren().add(checkBoxArray[i]);
-        }
         
         // Indicate entire section
         Rectangle entireSection = new Rectangle(minX,0,maxX-minX,maxY);
@@ -99,12 +80,27 @@ public class MovingBallsFX extends Application {
         criticalSection = new Rectangle(minCsX,0,maxCsX-minCsX,maxY);
         criticalSection.setFill(Color.LIGHTGREEN);
         root.getChildren().add(criticalSection);
-        
-        // Define circles for each ball
-        for (int i = 0; i < circleArray.length; i++) {
-            CheckBox cb = checkBoxArray[i];
-            int y = (int) cb.getLayoutY() + radius;
-            if (i < Math.floor(ballAmount * WriterReaderSplit))
+
+        int readerAmount = (int)Math.floor(ballAmount * WriterReaderSplit);
+        for (int i = 0; i < ballAmount; i++) {
+            String text;
+            if (i < readerAmount) {
+                // Check box for reader
+                text = "Reader"+(i+1);
+            }
+            else {
+                // Check box for writer
+                text = "Writer"+(i-readerAmount+1);
+            }
+            final int index = i;
+            checkBoxArray[i] = new CheckBox(text);
+            checkBoxArray[i].selectedProperty().addListener((obs, oldVal, newVal ) -> checkBoxMouseClicked(index));
+            checkBoxArray[i].setLayoutX(radius);
+            checkBoxArray[i].setLayoutY((i*4 + 1)*radius);
+            root.getChildren().add(checkBoxArray[i]);
+
+            int y = (int) checkBoxArray[i].getLayoutY() + radius;
+            if (i < readerAmount)
                 // Reader
                 circleArray[i] = new Circle(minX, y, radius, Color.RED);
             else
