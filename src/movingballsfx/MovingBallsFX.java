@@ -6,6 +6,7 @@ package movingballsfx;
 
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.event.EventType;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.CheckBox;
@@ -22,13 +23,15 @@ import javafx.stage.Stage;
 public class MovingBallsFX extends Application {
     
     private Thread threadDraw;
-    private Ball[] ballArray = new Ball[10];
-    private Thread[] threadArray = new Thread[10];
-    private CheckBox[] checkBoxArray = new CheckBox[10];
-    private Circle[] circleArray = new Circle[10];
+    private final int ballAmount = 10;
+    private final double WriterReaderSplit = 0.5;
+    private Ball[] ballArray = new Ball[ballAmount];
+    private Thread[] threadArray = new Thread[ballAmount];
+    private CheckBox[] checkBoxArray = new CheckBox[ballAmount];
+    private Circle[] circleArray = new Circle[ballAmount];
     private int minX = 100;
     private int maxX = 700;
-    private int maxY = 400;
+    private int maxY = 40*ballAmount;
     private int radius = 10;
     private int minCsX = (maxX + minX) / 2 - 100;
     private int maxCsX = (maxX + minX) / 2 + 100;
@@ -71,13 +74,13 @@ public class MovingBallsFX extends Application {
         // Check boxes
         for (int i = 0; i < checkBoxArray.length; i++) {
             String text;
-            if (i < 5) { 
+            if (i < Math.floor(ballAmount * WriterReaderSplit)) {
                 // Check box for reader
                 text = "Reader"+(i+1);
             }
             else {
                 // Check box for writer
-                text = "Writer"+(i-4);
+                text = "Writer"+(i-(int)Math.floor(ballAmount * WriterReaderSplit)+1);
             }
             final int index = i;
             checkBoxArray[i] = new CheckBox(text);
@@ -102,14 +105,12 @@ public class MovingBallsFX extends Application {
         for (int i = 0; i < circleArray.length; i++) {
             CheckBox cb = checkBoxArray[i];
             int y = (int) cb.getLayoutY() + radius;
-            if (i < 5) {
+            if (i < Math.floor(ballAmount * WriterReaderSplit))
                 // Reader
                 circleArray[i] = new Circle(minX, y, radius, Color.RED);
-            }
-            else {
+            else
                 // Writer
                 circleArray[i] = new Circle(minX, y, radius, Color.BLUE);
-            }
             circleArray[i].setVisible(false);
             root.getChildren().add(circleArray[i]);
         }
@@ -127,7 +128,7 @@ public class MovingBallsFX extends Application {
     private void checkBoxMouseClicked(MouseEvent event, int index) {
         CheckBox cb = checkBoxArray[index];
         int y = (int) cb.getLayoutY() + radius;
-        if (cb.isSelected() && index < 5) { 
+        if (cb.isSelected() && index < Math.floor(ballAmount * WriterReaderSplit)) {
             // Reader selected: new red ball
             Ball b = new Ball(minX, maxX, minCsX, maxCsX, y, Color.RED);
             ballArray[index] = b;
@@ -135,7 +136,7 @@ public class MovingBallsFX extends Application {
             threadArray[index] = t;
             circleArray[index].setVisible(true);
             t.start();
-        } else if (cb.isSelected() && index >= 5) { 
+        } else if (cb.isSelected() && index >= Math.floor(ballAmount * WriterReaderSplit)) {
             // Writer selected: new blue ball
             Ball b = new Ball(minX, maxX, minCsX, maxCsX, y, Color.BLUE);
             ballArray[index] = b;
@@ -190,12 +191,13 @@ public class MovingBallsFX extends Application {
     private class DrawRunnable implements Runnable {
         @Override
         public void run() {
-            try {
-                while (true) {
+            while (true) {
+                try {
                     Thread.sleep(20);
                     Platform.runLater(() -> updateCircles());
+                } catch (InterruptedException ex) {
+                    break;
                 }
-            } catch (InterruptedException ex) {  
             }
         }
     }
